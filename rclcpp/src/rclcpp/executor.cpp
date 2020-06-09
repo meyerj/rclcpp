@@ -36,6 +36,7 @@ using rclcpp::FutureReturnCode;
 
 Executor::Executor(const rclcpp::ExecutorOptions & options)
 : spinning(false),
+  trigger_guard_condition_(false),
   memory_strategy_(options.memory_strategy)
 {
   rcl_guard_condition_options_t guard_condition_options = rcl_guard_condition_get_default_options();
@@ -137,6 +138,10 @@ Executor::add_node(rclcpp::node_interfaces::NodeBaseInterface::SharedPtr node_pt
       throw std::runtime_error(rcl_get_error_string().str);
     }
   }
+
+  // Check whether triggering a guard condition is necessary (will depend on the type of executor and callback groups)
+  set_guard_condition_trigger();
+
   // Add the node's notify condition to the guard condition handles
   std::unique_lock<std::mutex> lock(memory_strategy_mutex_);
   memory_strategy_->add_guard_condition(node_ptr->get_notify_guard_condition());
@@ -177,6 +182,10 @@ Executor::remove_node(rclcpp::node_interfaces::NodeBaseInterface::SharedPtr node
       }
     }
   }
+
+  // Check whether triggering a guard condition is necessary (will depend on the type of executor and callback groups)
+  set_guard_condition_trigger();
+
   std::unique_lock<std::mutex> lock(memory_strategy_mutex_);
   memory_strategy_->remove_guard_condition(node_ptr->get_notify_guard_condition());
 }
@@ -306,7 +315,7 @@ Executor::execute_any_executable(AnyExecutable & any_exec)
   any_exec.callback_group->can_be_taken_from().store(true);
   // Wake the wait, because it may need to be recalculated or work that
   // was previously blocked is now available.
-  if (rcl_trigger_guard_condition(&interrupt_guard_condition_) != RCL_RET_OK) {
+  if (trigger_guard_condition_.load() && rcl_trigger_guard_condition(&interrupt_guard_condition_) != RCL_RET_OK) {
     throw std::runtime_error(rcl_get_error_string().str);
   }
 }
@@ -623,6 +632,7 @@ Executor::get_next_executable(AnyExecutable & any_executable, std::chrono::nanos
   if (!success) {
     // Wait for subscriptions or timers to work on
     wait_for_work(timeout);
+
     if (!spinning.load()) {
       return false;
     }

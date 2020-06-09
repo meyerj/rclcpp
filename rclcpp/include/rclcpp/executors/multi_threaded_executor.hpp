@@ -78,6 +78,10 @@ protected:
   void
   run(size_t this_thread_number);
 
+  RCLCPP_PUBLIC
+  void
+  set_guard_condition_trigger();
+
 private:
   RCLCPP_DISABLE_COPY(MultiThreadedExecutor)
 
