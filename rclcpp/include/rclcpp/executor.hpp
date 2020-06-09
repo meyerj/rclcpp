@@ -275,6 +275,10 @@ protected:
   execute_any_executable(AnyExecutable & any_exec);
 
   RCLCPP_PUBLIC
+  virtual void
+  set_guard_condition_trigger() {};
+
+  RCLCPP_PUBLIC
   static void
   execute_subscription(
     rclcpp::SubscriptionBase::SharedPtr subscription);
@@ -318,6 +322,9 @@ protected:
 
   /// Spinning state, used to prevent multi threaded calls to spin and to cancel blocking spins.
   std::atomic_bool spinning;
+
+  /// boolean to control whether guard condition is triggered after executing
+  std::atomic_bool trigger_guard_condition_;
 
   /// Guard condition for signaling the rmw layer to wake up for special events.
   rcl_guard_condition_t interrupt_guard_condition_ = rcl_get_zero_initialized_guard_condition();

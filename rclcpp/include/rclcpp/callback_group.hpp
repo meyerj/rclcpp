@@ -94,6 +94,13 @@ public:
     return _find_ptrs_if_impl<rclcpp::Waitable, Function>(func, waitable_ptrs_);
   }
 
+  int
+  size() const
+  {
+    return subscription_ptrs_.size() + timer_ptrs_.size() +
+           client_ptrs_.size() + service_ptrs_.size() + waitable_ptrs_.size();
+  }
+
   RCLCPP_PUBLIC
   std::atomic_bool &
   can_be_taken_from();
