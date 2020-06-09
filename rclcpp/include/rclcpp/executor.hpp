@@ -282,7 +282,7 @@ protected:
 
   RCLCPP_PUBLIC
   virtual void
-  set_guard_condition_trigger() {};
+  set_guard_condition_trigger() {}
 
   RCLCPP_PUBLIC
   static void
