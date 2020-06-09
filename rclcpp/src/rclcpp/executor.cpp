@@ -139,7 +139,8 @@ Executor::add_node(rclcpp::node_interfaces::NodeBaseInterface::SharedPtr node_pt
     }
   }
 
-  // Check whether triggering a guard condition is necessary (will depend on the type of executor and callback groups)
+  // Check whether triggering a guard condition is necessary
+  // (will depend on the type of executor and callback groups)
   set_guard_condition_trigger();
 
   // Add the node's notify condition to the guard condition handles
@@ -183,7 +184,8 @@ Executor::remove_node(rclcpp::node_interfaces::NodeBaseInterface::SharedPtr node
     }
   }
 
-  // Check whether triggering a guard condition is necessary (will depend on the type of executor and callback groups)
+  // Check whether triggering a guard condition is necessary
+  // (will depend on the type of executor and callback groups)
   set_guard_condition_trigger();
 
   std::unique_lock<std::mutex> lock(memory_strategy_mutex_);
@@ -309,7 +311,8 @@ Executor::execute_any_executable(AnyExecutable & any_exec)
   any_exec.callback_group->can_be_taken_from().store(true);
   // Wake the wait, because it may need to be recalculated or work that
   // was previously blocked is now available.
-  if (trigger_guard_condition_.load() && rcl_trigger_guard_condition(&interrupt_guard_condition_) != RCL_RET_OK) {
+  if (trigger_guard_condition_.load() &&
+      rcl_trigger_guard_condition(&interrupt_guard_condition_) != RCL_RET_OK) {
     throw std::runtime_error(rcl_get_error_string().str);
   }
 }
