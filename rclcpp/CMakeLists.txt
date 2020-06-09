@@ -607,6 +607,14 @@ if(BUILD_TESTING)
     target_link_libraries(test_multi_threaded_executor ${PROJECT_NAME})
   endif()
 
+    ament_add_gtest(test_guard_condition_trigger test/test_guard_condition_trigger.cpp
+    APPEND_LIBRARY_DIRS "${append_library_dirs}")
+  if(TARGET test_guard_condition_trigger)
+    ament_target_dependencies(test_guard_condition_trigger
+      "rcl")
+    target_link_libraries(test_guard_condition_trigger ${PROJECT_NAME})
+  endif()
+
   ament_add_gtest(test_guard_condition test/test_guard_condition.cpp
     APPEND_LIBRARY_DIRS "${append_library_dirs}")
   if(TARGET test_guard_condition)

@@ -257,6 +257,10 @@ public:
   void
   set_memory_strategy(memory_strategy::MemoryStrategy::SharedPtr memory_strategy);
 
+  RCLCPP_PUBLIC
+  bool
+  get_guard_condition_trigger() {return trigger_guard_condition_.load();}
+
 protected:
   RCLCPP_PUBLIC
   void
