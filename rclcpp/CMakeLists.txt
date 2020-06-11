@@ -591,6 +591,14 @@ if(BUILD_TESTING)
     target_link_libraries(test_init ${PROJECT_NAME})
   endif()
 
+  ament_add_gtest(test_wait_mutex test/test_wait_mutex.cpp
+    APPEND_LIBRARY_DIRS "${append_library_dirs}")
+  if(TARGET test_wait_mutex)
+    ament_target_dependencies(test_wait_mutex
+      "rcl")
+    target_link_libraries(test_wait_mutex ${PROJECT_NAME})
+  endif()
+
   ament_add_gtest(test_interface_traits test/test_interface_traits.cpp
     APPEND_LIBRARY_DIRS "${append_library_dirs}")
   if(TARGET test_interface_traits)
