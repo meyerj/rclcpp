@@ -257,9 +257,14 @@ public:
   void
   set_memory_strategy(memory_strategy::MemoryStrategy::SharedPtr memory_strategy);
 
+  /**
+   * Returns wake_after_execute_ flag
+   *
+   * \return wake_after_execute_ flag
+   */
   RCLCPP_PUBLIC
   bool
-  get_guard_condition_trigger() {return trigger_guard_condition_.load();}
+  get_wake_after_executor_flag() {return wake_after_execute_.load();}
 
 protected:
   RCLCPP_PUBLIC
@@ -278,9 +283,16 @@ protected:
   void
   execute_any_executable(AnyExecutable & any_exec);
 
+  /**
+   * After executing an executable, this function determines
+   * if it should wake the wait in rcl_wait so that the executor
+   * can process any pending executable
+   *
+   * \return wake_after_execute_ flag
+   */
   RCLCPP_PUBLIC
-  virtual void
-  set_guard_condition_trigger() {}
+  virtual bool
+  set_wake_after_execute_flag() {return wake_after_execute_.load();}
 
   RCLCPP_PUBLIC
   static void
@@ -328,7 +340,7 @@ protected:
   std::atomic_bool spinning;
 
   /// boolean to control whether guard condition is triggered after executing
-  std::atomic_bool trigger_guard_condition_;
+  std::atomic_bool wake_after_execute_;
 
   /// Guard condition for signaling the rmw layer to wake up for special events.
   rcl_guard_condition_t interrupt_guard_condition_ = rcl_get_zero_initialized_guard_condition();

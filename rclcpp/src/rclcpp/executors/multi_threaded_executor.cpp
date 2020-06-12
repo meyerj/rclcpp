@@ -77,15 +77,15 @@ MultiThreadedExecutor::get_number_of_threads()
 // then set trigger guard condition to true
 // so that it avoids a thread getting stuck
 // in rcl_wait.
-void
-MultiThreadedExecutor::set_guard_condition_trigger()
+bool
+MultiThreadedExecutor::set_wake_after_execute_flag()
 {
   // Initialize as false in the case
   // it is true and the executor has
   // zero nodes, nodes with empty
   // callback groups, or nodes with
   // all reentrant callback groups
-  trigger_guard_condition_.store(false);
+  wake_after_execute_.store(false);
   for (auto & weak_node : weak_nodes_) {
     auto node = weak_node.lock();
     if (!node) {
@@ -99,11 +99,12 @@ MultiThreadedExecutor::set_guard_condition_trigger()
         continue;
       }
       if (callback_group->type() == rclcpp::callback_group::CallbackGroupType::MutuallyExclusive) {
-        trigger_guard_condition_.store(true);
+        wake_after_execute_.store(true);
         break;
       }
     }
   }
+  return wake_after_execute_.load();
 }
 
 void
