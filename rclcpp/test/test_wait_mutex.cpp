@@ -36,10 +36,13 @@ protected:
   }
 };
 
+constexpr int EXECUTION_COUNT = 5;
+constexpr double TIME_ELAPSED = 12.0;
 /*
    Test timer wait mutex with multithreaded executor.
    After 5 call
  */
+
 TEST_F(TestWaitMutex, set_timer_wait_mutex_multi_threaded) {
 
   rclcpp::executors::MultiThreadedExecutor executor;
@@ -51,7 +54,6 @@ TEST_F(TestWaitMutex, set_timer_wait_mutex_multi_threaded) {
 
   rclcpp::Clock system_clock(RCL_STEADY_TIME);
   std::mutex last_mutex;
-  auto last = system_clock.now();
   rclcpp::Time initial = system_clock.now();
 
   std::atomic_int timer_count {0};
@@ -64,9 +66,9 @@ TEST_F(TestWaitMutex, set_timer_wait_mutex_multi_threaded) {
         std::lock_guard<std::mutex> lock(last_mutex);
         double diff = std::abs((now - initial).nanoseconds()) / 1.0e9;
 
-        if (diff > 12.0) {
+        if (diff > TIME_ELAPSED) {
           executor.cancel();
-          ASSERT_GT(timer_count, 5);
+          ASSERT_GT(timer_count, EXECUTION_COUNT);
         }
       }
     };
@@ -90,7 +92,6 @@ TEST_F(TestWaitMutex, set_timer_wait_mutex_single_threaded) {
 
   rclcpp::Clock system_clock(RCL_STEADY_TIME);
   std::mutex last_mutex;
-  auto last = system_clock.now();
   rclcpp::Time initial = system_clock.now();
 
   std::atomic_int timer_count {0};
@@ -103,9 +104,9 @@ TEST_F(TestWaitMutex, set_timer_wait_mutex_single_threaded) {
         std::lock_guard<std::mutex> lock(last_mutex);
         double diff = std::abs((now - initial).nanoseconds()) / 1.0e9;
 
-        if (diff > 12.0) {
+        if (diff > TIME_ELAPSED) {
           executor.cancel();
-          ASSERT_GT(timer_count, 5);
+          ASSERT_GT(timer_count, EXECUTION_COUNT);
         }
       }
     };
