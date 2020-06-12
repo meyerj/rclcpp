@@ -86,7 +86,7 @@ MultiThreadedExecutor::run(size_t)
     }
 
     if (any_exec.timer) {
-      std::lock_guard<std::mutex> wait_lock(timer_wait_mutex_);
+      std::lock_guard<std::mutex> wait_lock(scheduled_timers_mutex_);
       // Guard against multiple threads getting the same timer.
       if (scheduled_timers_.count(any_exec.timer) != 0) {
         // Make sure that any_exec's callback group is reset before
@@ -106,7 +106,7 @@ MultiThreadedExecutor::run(size_t)
     execute_any_executable(any_exec);
 
     if (any_exec.timer) {
-      std::lock_guard<std::mutex> wait_lock(timer_wait_mutex_);
+      std::lock_guard<std::mutex> wait_lock(scheduled_timers_mutex_);
       auto it = scheduled_timers_.find(any_exec.timer);
       if (it != scheduled_timers_.end()) {
         scheduled_timers_.erase(it);
