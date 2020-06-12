@@ -27,7 +27,7 @@
 
 using namespace std::chrono_literals;
 
-class TestGuardConditionTrigger : public ::testing::Test
+class TestWakeAfterExecuteFlag : public ::testing::Test
 {
 protected:
   static void SetUpTestCase()
@@ -36,49 +36,70 @@ protected:
   }
 };
 
+
+constexpr int EXECUTION_COUNT = 5;
+
 /*
    Test guard condition trigger is set when a node is added and resetted when it is removed
  */
-TEST_F(TestGuardConditionTrigger, set_trigger_guard_condition_multi_threaded) {
+TEST_F(TestWakeAfterExecuteFlag, set_wake_after_execute_flag_multi_threaded) {
 
   rclcpp::executors::MultiThreadedExecutor executor;
 
   std::shared_ptr<rclcpp::Node> node =
-    std::make_shared<rclcpp::Node>("test_trigger_guard_condtion_multi_threaded");
+    std::make_shared<rclcpp::Node>("test_wake_after_execute_flag_multi_threaded");
 
   auto cbg = node->create_callback_group(rclcpp::CallbackGroupType::Reentrant);
 
-  auto timer_callback = []() {
+  std::atomic_int timer_count {0};
+
+  auto timer_callback = [&executor, &timer_count]() {
     printf("Timer executed!");
+
+    if(timer_count > 0){
+      ASSERT_EQ(executor.get_wake_after_executor_flag(), true);
+    }
+
+    timer_count++;
+
+    if(timer_count > EXECUTION_COUNT){
+      executor.cancel();
+    }
   };
 
   auto timer_ = node->create_wall_timer(
       2s, timer_callback, cbg);
 
   executor.add_node(node);
-  ASSERT_EQ(executor.get_guard_condition_trigger(), true);
-
-  executor.remove_node(node);
-  ASSERT_EQ(executor.get_guard_condition_trigger(), false);
+  executor.spin();
 }
 
-TEST_F(TestGuardConditionTrigger, set_trigger_guard_condition_single_threaded) {
+TEST_F(TestWakeAfterExecuteFlag, set_wake_after_execute_flag_single_threaded) {
 
   rclcpp::executors::SingleThreadedExecutor executor;
 
   std::shared_ptr<rclcpp::Node> node =
-    std::make_shared<rclcpp::Node>("test_trigger_guard_condtion_single_threaded");
+    std::make_shared<rclcpp::Node>("test_wake_after_execute_flag_single_threaded");
 
-  auto timer_callback = []() {
+  std::atomic_int timer_count {0};
+
+  auto timer_callback = [&executor, &timer_count]() {
     printf("Timer executed!");
+
+    if(timer_count > 0){
+      ASSERT_EQ(executor.get_wake_after_executor_flag(), false);
+    }
+
+    timer_count++;
+
+    if(timer_count > EXECUTION_COUNT){
+      executor.cancel();
+    }
   };
 
   auto timer_ = node->create_wall_timer(
       2s, timer_callback);
 
   executor.add_node(node);
-  ASSERT_EQ(executor.get_guard_condition_trigger(), false);
-
-  executor.remove_node(node);
-  ASSERT_EQ(executor.get_guard_condition_trigger(), false);
+  executor.spin();
 }
